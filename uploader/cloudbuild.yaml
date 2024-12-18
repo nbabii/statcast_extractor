@@ -1,0 +1,32 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - name: python
+    entrypoint: 'python'
+    args: ['-m', 'pip', 'install', '--upgrade', 'pip']
+
+  - name: python
+    entrypoint: pip
+    args: ["install", "-r", "./uploader/requirements.txt", "--user"]
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'video_uploader'    
+      - '--runtime'
+      - 'python312'           
+      - '--trigger-http'        
+      - '--entry-point'
+      - 'upload_video_file' 
+      - '--region'
+      - 'us-central1' 
+      - '--memory'
+      - '1GB'      
+      - '--source'
+      - './uploader/'     
+      - '--allow-unauthenticated'
+
+timeout: '540s'  # Maximum allowable execution time (540 seconds = 9 minutes)
+
