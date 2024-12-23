@@ -19,7 +19,7 @@ def upload_video_file(request):
         try:
             logging.info(f"test")
             file_name = download_file(request_json["video_url"])
-            get_frames(file_name)
+            #get_frames(file_name)
             upload_temp_folder()
         except Exception as e:
             logging.error(f"Server error: {e}")
@@ -27,20 +27,20 @@ def upload_video_file(request):
     else:
         return json.dumps({"error": "Only POST requests are accepted"}), 405
     
-    return "File uploaded successfully!", 200
+    return json.dumps({"file": file_name}), 200
 
 
 def download_file(video_url):
   response = requests.get(video_url, stream=True)
 
   if response.status_code == 200:
-      os.mkdir("./temp/")
+      os.makedirs("./temp/", exist_ok=True)
       file_name = video_url.split("/")[-1]
       temp_file_path = f"./temp/{file_name}"
       with open(temp_file_path, "wb") as f:
           for chunk in response.iter_content(chunk_size=8192):
               f.write(chunk)
-      print(f"File downloaded: {file_name}")
+      logging.info(f"File downloaded: {file_name}")
   else:
       raise Exception(f"Failed to download file: {response.status_code}, {response.text}")
   
@@ -59,7 +59,7 @@ def get_frames(video_file, for_seconds=5):
     while True:
         ret, frame = video_capture.read()
         if not ret or frame_count >= selected_frames_amount:
-            print(f"Exit the loop when the video ends")
+            logging.info(f"Exit the loop when the video ends")
             break 
 
         frame_filename = os.path.join(frames_folder, f"frame_{saved_frame_count:04d}.jpg")
@@ -81,4 +81,3 @@ def upload_temp_folder():
             local_file_path = os.path.join(root, file)
             blob = bucket.blob(local_file_path)
             blob.upload_from_filename(local_file_path)
-            
