@@ -1,20 +1,84 @@
+"use client"
 import Image from "next/image";
+import Select, { ActionMeta, SingleValue } from 'react-select';
+import React, { useState, useEffect } from 'react'
+ 
 
+interface IOption {
+  value?: string;
+  label?: string;
+  name: string;
+} 
 export default function Home() {
+  const [teamsOptions, setTeamsOptions] = useState([])
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("");
+
+  const getYears = () => {
+    const currentYear = (new Date()).getFullYear();
+    const range = (start: number, stop: number, step: number) => Array.from({ length: (stop - start) / step + 1}, (_, i) => start + (i * step));
+    return range(currentYear, currentYear - 30, -1).map((year) => ({
+      value: year,
+      label: year,
+    }));
+  }
+  const yearsOptions = getYears();
+
+  const getTeams = () => {
+    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}`)
+    .then(response => response.json())
+    .then(data => setTeamsOptions(data?.teams))
+    .catch(error => console.error('Error fetching teams data:', error));
+  }
+
+  const onYearSelect = (selected: any) => {
+    setSelectedYear(selected?.label)
+  }
+
+  const onTeamSelect = (selected: any) => {
+    setSelectedTeam(selected?.name)
+  }
+  
+  useEffect(() => {
+    if (selectedYear) {
+      getTeams();
+    }
+  }, [selectedYear])
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid items-center justify-items-center  p-8 pb-20 gap-16 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
+
+        <div className="flex items-center gap-8">
+          <Select
+            placeholder="Select year"
+            name="year"
+            options={yearsOptions}
+            classNamePrefix="select"
+            onChange={onYearSelect}
+            isClearable
+            isSearchable
+          />
+          {selectedYear && <Select
+            placeholder="Select team"
+            name="teams"
+            options={teamsOptions}
+            classNamePrefix="select"
+            className="w-[300px]"
+            isClearable
+            isSearchable
+            onChange={onTeamSelect}
+            getOptionLabel={({name}) => name}
+            getOptionValue={({id}) => id}
+          />}
+        </div>
+        <div className="flex items-center gap-8">
+          {selectedYear && <span> Selected year: {selectedYear}</span>}
+          {selectedTeam && <span> Selected team: {selectedTeam}</span>}
+        </div>
         <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2">
-            Get started by editing{" "}
+             Get started by editing{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
               src/app/page.tsx
             </code>
