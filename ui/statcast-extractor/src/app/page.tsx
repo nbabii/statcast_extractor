@@ -1,22 +1,20 @@
+ /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client"
 import Image from "next/image";
-import Select, { ActionMeta, SingleValue } from 'react-select';
+import Select from 'react-select';
 import React, { useState, useEffect } from 'react'
 import ReactPlayer from 'react-player';
+// import { list } from "postcss";
 
 
-interface IOption {
-  value?: string;
-  label?: string;
-  name: string;
-} 
 export default function Home() {
   const [teamsOptions, setTeamsOptions] = useState([]);
   const [videoList, setVideoList] = useState([])
   const [scheduleData, setScheduleData] = useState([])
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedGame, setSelectedGame] = useState("");
+  const [selectedGame, setSelectedGame] = useState(null);
 
   const getYears = () => {
     const currentYear = (new Date()).getFullYear();
@@ -67,9 +65,8 @@ export default function Home() {
   const onGameSelect  = (selected: any) => {
     getGameContent(selected?.gamePk)
     setSelectedGame(selected)
-    console.log('SELECTED', selected)
   }
-  console.log('videoList', videoList)
+
   useEffect(() => {
     if (selectedYear) {
       getTeams();
@@ -78,6 +75,8 @@ export default function Home() {
       getSchedule();
     }
   }, [selectedYear, selectedTeam])
+
+const { officialDate='', teams={} } = selectedGame || {} as any;
 
   return (
     <div className="grid items-center justify-items-center  p-8 pb-20 gap-16 font-[family-name:var(--font-geist-sans)]">
@@ -114,22 +113,22 @@ export default function Home() {
             isClearable
             isSearchable
             onChange={onGameSelect}
-            getOptionLabel={(option) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
+            getOptionLabel={(option: any) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
             getOptionValue={({gamePk}) => gamePk}
           />}
         </div>
         <div className="flex items-center gap-8">
           {selectedYear && <span> Selected year: {selectedYear}</span>}
           {selectedTeam && <span> Selected team: {selectedTeam}</span>}
-          {selectedGame && (
-            <span>Selected game on {selectedGame?.officialDate}
-              <span><b> Away:</b> {selectedGame?.teams?.away.team.name}</span>
-              <span> <b> Home:</b> {selectedGame?.teams?.home.team.name}</span>
+          {selectedGame && officialDate && (
+            <span>Selected game on {officialDate}
+              <span><b> Away:</b> {teams?.away.team.name}</span>
+              <span> <b> Home:</b> {teams?.home.team.name}</span>
             </span>
           )}
         </div>
         <div className="flex items-center gap-8 flex-wrap">
-          {videoList?.map(({playbacks}) => (
+          {videoList?.map(({playbacks}: any) => (
             <ReactPlayer 
               key={playbacks[0]?.url} 
               url={playbacks[0]?.url}
@@ -150,7 +149,7 @@ export default function Home() {
           <li>Save and see your changes instantly.</li>
         </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+        {/* <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
@@ -174,7 +173,7 @@ export default function Home() {
           >
             Read our docs
           </a>
-        </div>
+        </div> */}
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
