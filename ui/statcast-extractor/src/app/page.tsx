@@ -2,7 +2,8 @@
 import Image from "next/image";
 import Select, { ActionMeta, SingleValue } from 'react-select';
 import React, { useState, useEffect } from 'react'
- 
+import ReactPlayer from 'react-player';
+
 
 interface IOption {
   value?: string;
@@ -10,9 +11,12 @@ interface IOption {
   name: string;
 } 
 export default function Home() {
-  const [teamsOptions, setTeamsOptions] = useState([])
+  const [teamsOptions, setTeamsOptions] = useState([]);
+  const [videoList, setVideoList] = useState([])
+  const [scheduleData, setScheduleData] = useState([])
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedGame, setSelectedGame] = useState("");
 
   const getYears = () => {
     const currentYear = (new Date()).getFullYear();
@@ -31,6 +35,28 @@ export default function Home() {
     .catch(error => console.error('Error fetching teams data:', error));
   }
 
+  const getSchedule = () => {
+    return fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&season=${selectedYear}&gameType=R`)
+    .then(response => response.json())
+    .then(data => {
+      const filteredData = data?.dates?.map(({games})=> {
+         const allGames = games.flat().filter(({teams}) =>{
+          return teams?.away?.team?.name == selectedTeam || teams?.home?.team?.name == selectedTeam 
+        })
+        return allGames.flat()
+      });
+      setScheduleData(filteredData.flat())
+    })
+    .catch(error => console.error('Error fetching teams data:', error));
+  }
+
+  const getGameContent = (selectedGame: any) => {
+    return fetch(`https://statsapi.mlb.com/api/v1/game/${selectedGame}/content`)
+    .then(response => response.json())
+    .then(data => setVideoList(data?.highlights?.highlights?.items))
+    .catch(error => console.error('Error fetching teams data:', error));
+  }
+
   const onYearSelect = (selected: any) => {
     setSelectedYear(selected?.label)
   }
@@ -38,12 +64,20 @@ export default function Home() {
   const onTeamSelect = (selected: any) => {
     setSelectedTeam(selected?.name)
   }
-  
+  const onGameSelect  = (selected: any) => {
+    getGameContent(selected?.gamePk)
+    setSelectedGame(selected)
+    console.log('SELECTED', selected)
+  }
+  console.log('videoList', videoList)
   useEffect(() => {
     if (selectedYear) {
       getTeams();
     }
-  }, [selectedYear])
+    if(selectedYear && selectedTeam) {
+      getSchedule();
+    }
+  }, [selectedYear, selectedTeam])
 
   return (
     <div className="grid items-center justify-items-center  p-8 pb-20 gap-16 font-[family-name:var(--font-geist-sans)]">
@@ -71,11 +105,40 @@ export default function Home() {
             getOptionLabel={({name}) => name}
             getOptionValue={({id}) => id}
           />}
+           {scheduleData?.length && <Select
+            placeholder="Select game"
+            name="games"
+            options={scheduleData}
+            classNamePrefix="select"
+            className="w-[300px]"
+            isClearable
+            isSearchable
+            onChange={onGameSelect}
+            getOptionLabel={(option) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
+            getOptionValue={({gamePk}) => gamePk}
+          />}
         </div>
         <div className="flex items-center gap-8">
           {selectedYear && <span> Selected year: {selectedYear}</span>}
           {selectedTeam && <span> Selected team: {selectedTeam}</span>}
+          {selectedGame && (
+            <span>Selected game on {selectedGame?.officialDate}
+              <span><b> Away:</b> {selectedGame?.teams?.away.team.name}</span>
+              <span> <b> Home:</b> {selectedGame?.teams?.home.team.name}</span>
+            </span>
+          )}
         </div>
+        <div className="flex items-center gap-8 flex-wrap">
+          {videoList?.map(({playbacks}) => (
+            <ReactPlayer 
+              key={playbacks[0]?.url} 
+              url={playbacks[0]?.url}
+              controls
+              width='30%'
+            />
+            ) )}
+          
+          </div>
         <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2">
              Get started by editing{" "}
