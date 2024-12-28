@@ -8,24 +8,24 @@ steps:
 
   - name: python
     entrypoint: pip
-    args: ["install", "-r", "./uploader/requirements.txt", "--user"]
+    args: ["install", "-r", "./extractor/requirements.txt", "--user"]
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'functions'
       - 'deploy'
-      - 'video_uploader'    
+      - 'stat_extractor'    
       - '--runtime'
       - 'python312'           
       - '--trigger-http'        
       - '--entry-point'
-      - 'upload_video_file' 
+      - 'extract_stats' 
       - '--region'
       - 'us-central1' 
       - '--memory'
-      - '2GB'      
+      - '1GB'      
       - '--source'
-      - './uploader/'     
+      - './extractor/'     
       - '--allow-unauthenticated'
 
 timeout: '480s'
