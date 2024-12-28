@@ -27,7 +27,7 @@ def upload_video_file(request):
     else:
         return json.dumps({"error": "Only POST requests are accepted"}), 405
     
-    return json.dumps({"file": file_name}), 200
+    return json.dumps({"video_file_name": file_name}), 200
 
 
 def download_file(video_url):
