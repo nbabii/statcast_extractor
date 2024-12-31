@@ -37,6 +37,16 @@ LOCATION = "us-central1"
 
 @functions_framework.http
 def extract_stats(request):
+    if request.method == "OPTIONS":
+        headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Max-Age": "3600",
+        }
+
+        return ("", 204, headers)
+    
     request_json = request.get_json()
 
     if not request_json or "video_file_name" not in request_json:
@@ -50,9 +60,11 @@ def extract_stats(request):
             logging.error(f"Server error: {e}")
             return json.dumps({"error": f"An unexpected error occurred. E: {e}"}), 500
     else:
-        return json.dumps({"error": "Only POST requests are accepted"}), 405
+        return json.dumps({"error": "Only POST requests are accepted"}), 405    
+
+    headers = {"Access-Control-Allow-Origin": "*"}
     
-    return res, 200
+    return res, 200, headers
 
 
 def extract(video_file_name):

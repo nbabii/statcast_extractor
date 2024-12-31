@@ -9,12 +9,22 @@ import os
 
 @functions_framework.http
 def upload_video_file(request):
+    if request.method == "OPTIONS":
+        headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Max-Age": "3600",
+        }
+
+        return ("", 204, headers)
+    
     request_json = request.get_json()
 
     if not request_json or "video_url" not in request_json:
         logging.error(f"Server error: 'video_url' property is required")
         return json.dumps({"error": "'video_url' property is required"}), 500
-    
+
     if request.method == 'POST':
         try:
             logging.info(f"test")
@@ -27,7 +37,9 @@ def upload_video_file(request):
     else:
         return json.dumps({"error": "Only POST requests are accepted"}), 405
     
-    return json.dumps({"video_file_name": file_name}), 200
+    headers = {"Access-Control-Allow-Origin": "*"}
+
+    return json.dumps({"video_file_name": file_name}), 200, headers
 
 
 def download_file(video_url):
