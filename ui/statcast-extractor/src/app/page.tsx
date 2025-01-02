@@ -1,20 +1,16 @@
  /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client"
-import Image from "next/image";
 import Select from 'react-select';
 import React, { useState, useEffect } from 'react'
-import ReactPlayer from 'react-player';
-// import { list } from "postcss";
-
+import Playlists from "./components/Playlists";
 
 export default function Home() {
   const [teamsOptions, setTeamsOptions] = useState([]);
-  const [videoList, setVideoList] = useState([])
   const [scheduleData, setScheduleData] = useState([])
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedGame, setSelectedGame] = useState(null);
+  const [selectedGame, setSelectedGame] = useState({});
 
   const getYears = () => {
     const currentYear = (new Date()).getFullYear();
@@ -48,12 +44,6 @@ export default function Home() {
     .catch(error => console.error('Error fetching teams data:', error));
   }
 
-  const getGameContent = (selectedGame: any) => {
-    return fetch(`https://statsapi.mlb.com/api/v1/game/${selectedGame}/content`)
-    .then(response => response.json())
-    .then(data => setVideoList(data?.highlights?.highlights?.items))
-    .catch(error => console.error('Error fetching teams data:', error));
-  }
 
   const onYearSelect = (selected: any) => {
     setSelectedYear(selected?.label)
@@ -63,7 +53,6 @@ export default function Home() {
     setSelectedTeam(selected?.name)
   }
   const onGameSelect  = (selected: any) => {
-    getGameContent(selected?.gamePk)
     setSelectedGame(selected)
   }
 
@@ -76,10 +65,10 @@ export default function Home() {
     }
   }, [selectedYear, selectedTeam])
 
-const { officialDate='', teams={} } = selectedGame || {} as any;
+const { officialDate='', teams={}, gamePk } = selectedGame || {} as any;
 
-  return (
-    <div className="grid items-center justify-items-center  p-8 pb-20 gap-16 font-[family-name:var(--font-geist-sans)]">
+return (
+    <div className="grid items-center justify-items-center  p-8 pb-20 gap-16 ">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
 
         <div className="flex items-center gap-8">
@@ -127,101 +116,10 @@ const { officialDate='', teams={} } = selectedGame || {} as any;
             </span>
           )}
         </div>
-        <div className="flex items-center gap-8 flex-wrap">
-          {videoList?.map(({playbacks}: any) => (
-            <ReactPlayer 
-              key={playbacks[0]?.url} 
-              url={playbacks[0]?.url}
-              controls
-              width='30%'
-            />
-            ) )}
-          
-          </div>
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-             Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        {/* <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div> */}
+        <Playlists selectedGame={gamePk} />
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      
     </div>
   );
 }
