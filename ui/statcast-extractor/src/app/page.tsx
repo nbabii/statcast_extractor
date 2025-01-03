@@ -23,7 +23,7 @@ export default function Home() {
   const yearsOptions = getYears();
 
   const getTeams = () => {
-    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}`)
+    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}&active=true`)
     .then(response => response.json())
     .then(data => setTeamsOptions(data?.teams))
     .catch(error => console.error('Error fetching teams data:', error));

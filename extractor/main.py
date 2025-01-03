@@ -75,10 +75,10 @@ def extract(video_file_name):
                                          response_mime_type="application/json",
                                          response_schema = response_schema)
 
-    video_analysis_prompt = """You are a system which detects and extracts MLB Statcast metrics from game videos.
-                            Reply in json array format, where 'metric' - official statcast metric name always uppercase and no underscores, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value and units.
+    video_analysis_prompt = """You are a system which detects and extracts MLB Statcast metrics showed during game videos.
+                            Reply in json array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units.
                             If some metric value is not available - do not return it.
-                            From provided video extract all available fundamental MLB Statcast metric(s), like Pitch Speed, Exit Velocity, etc.
+                            From provided video extract displayed MLB Statcast metric(s), like Pitch Speed, Exit Velocity, etc.
                             """
 
     contents = [
