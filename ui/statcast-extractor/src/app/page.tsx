@@ -23,9 +23,9 @@ export default function Home() {
   const yearsOptions = getYears();
 
   const getTeams = () => {
-    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}&active=true`)
+    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}`)
     .then(response => response.json())
-    .then(data => setTeamsOptions(data?.teams))
+    .then(data => setTeamsOptions(data?.teams.filter((team) => team?.active && team?.sport.id == 1 ).sort((a, b) => a.name.localeCompare(b.name))))
     .catch(error => console.error('Error fetching teams data:', error));
   }
 

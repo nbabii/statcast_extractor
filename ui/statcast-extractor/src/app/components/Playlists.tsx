@@ -12,15 +12,12 @@ export default function Playlists({ selectedGame }: { selectedGame: string }) {
             const getContent= async () => {
                 const data = await getGameContent(selectedGame);
                 const allowedValues = ["hitting", "home-run", "player-tracking"];
-                console.log('BEFORE', data?.highlights?.highlights?.items)
                 const filteredData = data?.highlights?.highlights?.items.filter((item) =>
                     item.keywordsAll.some(
                     (keyword) => keyword.type === "taxonomy" && allowedValues.includes(keyword.value)
                     )
                 );
                 
-                console.log("AFTER",filteredData);
-
                 setPlaylists(filteredData);
             
             };

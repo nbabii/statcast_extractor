@@ -6,10 +6,10 @@ import {fetchVideoUploader, fetchVideoMetric} from "../service/api"
 import { VideoMetric } from "../types/VideoMetric";
 
  interface IDataProps {
-    url?: string;
+    url: string;
  }
  
- export function CustomPlayer({url = 'https://mlb-cuts-diamond.mlb.com/FORGE/2024/2024-03/28/8eb244ac-984856ac-6bd0e36c-csvm-diamondx64-asset_1280x720_59_4000K.mp4'}: IDataProps) {
+ export function CustomPlayer({url}: IDataProps) {
 
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
