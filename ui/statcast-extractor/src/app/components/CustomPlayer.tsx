@@ -6,10 +6,11 @@ import {fetchVideoUploader, fetchVideoMetric} from "../service/api"
 import { VideoMetric } from "../types/VideoMetric";
 
  interface IDataProps {
-    url: string;
+    url: string,
+    type: string
  }
  
- export function CustomPlayer({url}: IDataProps) {
+ export function CustomPlayer({url, type}: IDataProps) {
 
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +39,7 @@ import { VideoMetric } from "../types/VideoMetric";
     //     getFileName()
     // },[])
 
-
+    console.log(type)
     return (
         <div className="flex items-center gap-8 flex-wrap">
             <ReactPlayer 
@@ -55,7 +56,7 @@ import { VideoMetric } from "../types/VideoMetric";
                 {metrics?.map(({metric, detection_time, metric_value}, idx) => (<span key={idx}>{`${metric} -> ${detection_time} -> ${metric_value}`}</span>))}
             </div>
             {error && <div className="flex flex-col gap-1">Error fetching data</div> }
-            
+            <div className="flex flex-col gap-1">{type}</div>
         </div>
    );
  }
