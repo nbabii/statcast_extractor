@@ -25,9 +25,6 @@ response_schema = {
             },
             "metric_value": {
                 "type": "string",
-            },
-            "confidence_score": {
-                "type": "number",
             }
         },
     }
@@ -78,9 +75,15 @@ def extract(video_file_name):
                                          response_mime_type="application/json",
                                          response_schema = response_schema)
 
-    video_analysis_prompt = """You are an assistant which detects and extracts MLB Statcast metrics showed ONLY as on-screen visualizations overlaid on the broadcast.
-                            Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units, 'confidence_score' - your confidence score as float from 0 to 1 with 3 decimal places.
-                            From provided video on-screen visualizations overlaid on the broadcast extract only following metrics: Pitch Speed, Exit Velocity, Projected HR Distance, Launch Angle, Max Height; If some metric not available - do not return it.
+    video_analysis_prompt = """You are an assistant which detects and extracts MLB Statcast metrics from Statcast on-screen visualizations overlaid on the broadcast.
+                            From provided video extract only metrics listed below, to detect use provided in brackets instructions:
+                            Pitch Velocity (value should be extracted from on-screen visualization);
+                            Exit Velocity (value should be only extracted if it is located near to text 'Exit Velocity', 'EV' or 'EVL');
+                            Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance' or 'HR-DIS');
+                            Launch Angle (value should be only extracted if it is located near to text 'Launch Angle', 'Angle' or 'LA');
+                            Max Height (value should be only extracted if it is located near to text 'Max Height');
+                            If some metric not available - do not return it.
+                            Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units.
                             """
 
     contents = [
