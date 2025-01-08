@@ -7,10 +7,11 @@ import { VideoMetric } from "../types/VideoMetric";
  interface IDataProps {
     url: string,
     type: string,
-    playing?: boolean
+    playing?: boolean,
+    description: string
  }
  
- export function CustomPlayer({url, type, playing}: IDataProps) {
+ export function CustomPlayer({url, type, playing, description}: IDataProps) {
 
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,20 +45,22 @@ import { VideoMetric } from "../types/VideoMetric";
     },[url])
 
     return (
-        <div className="flex flex-col gap-3 mb-3 border bg-gray-100 mb-2rounded">
-            <ReactPlayer 
-                key={url} 
-                url={url}
-                controls={playing}
-                width={'100%'}
-                height='100%'
-                playing={playing}
-                onPlay={()=> false}
-            />
-            <div className="flex gap-3 mb-3">
+        <div className="flex flex-col gap-3 mb-3 border self-auto bg-gray-100 mb-2 rounded h-full">
+            <div className="flex">
+                <ReactPlayer 
+                    key={url} 
+                    url={url}
+                    controls={playing}
+                    width={'100%'}
+                    height='100%'
+                    playing={playing}
+                />
+            </div>
+            <div className="flex gap-3 mb-3 px-3">
                 <div>
-                    {<div className="flex flex-col gap-1 mx-3">Type: {type}</div>}
-                    {(metrics.length > 0 || error) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded w-[100px]" onClick={handleClick} disabled={isLoading} >
+                    <div className='line-clamp-2 font-bold'>{description}</div>
+                    {<div className="flex flex-col gap-1">Type: {type}</div>}
+                    {(metrics.length > 0 || error || !playing) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded w-[100px]" onClick={handleClick} disabled={isLoading} >
                         {isLoading ? 'Loading...' : 'Extract'}
                     </button>}
                 </div>
@@ -67,10 +70,7 @@ import { VideoMetric } from "../types/VideoMetric";
                     </div>
                     {error && <div className="flex flex-col gap-1">Error fetching data</div> }
                 </div>  
-            </div>
-            
-           
-            
+            </div> 
         </div>
    );
  }

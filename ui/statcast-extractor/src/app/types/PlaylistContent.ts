@@ -8,6 +8,7 @@ export type Keywords = {
 export type PlaylistPlaybacks = {
     playbacks: Playbacks;
     keywordsAll: Keywords[];
+    blurb: string;
 }
 
 export type Highlights = {

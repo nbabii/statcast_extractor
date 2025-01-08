@@ -12,14 +12,14 @@ export default function Home() {
   const [scheduleData, setScheduleData] = useState([])
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedGame, setSelectedGame] = useState({});
+  const [selectedGame, setSelectedGame] = useState();
 
   const getYears = () => {
     const currentYear = (new Date()).getFullYear()-1;
     const range = (start: number, stop: number, step: number) => Array.from({ length: (stop - start) / step + 1}, (_, i) => start + (i * step));
     return range(currentYear, currentYear - 30, -1).map((year) => ({
-      value: year + "",
-      label: year + "",
+      value: year + '',
+      label: year + '',
     }));
   }
   const yearsOptions = getYears();
@@ -72,9 +72,9 @@ const { gamePk } = selectedGame || {} as any;
 const defaultValue = { value: '2024', label: '2024' };
 
 return (
-    <div className="grid items-center  p-8 pb-20 gap-16 ">
-      <div className={`flex  ${isEmpty(selectedGame) ? 'h-[calc(100vh_-_150px)]' : 'h-full'}`}>
-        <div>
+    <div className={`{ p-8 pb-20 gap-16}`}>
+      <div className={`grid items-center justify-items-center gap-16 ${isEmpty(selectedGame) ? 'h-[calc(100vh_-_150px)]' : 'h-full'}`}>
+        <div className={'flex items-center flex-col justify-center align-center m-6 justify-items-center'}>
           <div className={'flex items-center justify-center align-center m-6'}>
             <Image
               src="https://www.mlbstatic.com/team-logos/league-on-dark/1.svg"
@@ -85,106 +85,49 @@ return (
             <div className='text-3xl font-bold items-center p-3'>Statcast</div>
           </div>
         
-         <div className="flex items-center gap-8">
-          <Select
-            styles={{
-              container: provided => ({
-                ...provided,
-                width: 150
-              })
-            }}
-            placeholder="Select season"
-            name="year"
-            options={yearsOptions}
-            defaultValue={defaultValue}
-            classNamePrefix="select"
-            onChange={onYearSelect}
-            isSearchable
-          />
-          {selectedYear ? <Select
-            placeholder="Select team"
-            name="teams"
-            options={teamsOptions}
-            classNamePrefix="select"
-            className="w-[300px]"
-            isClearable
-            isSearchable
-            onChange={onTeamSelect}
-            getOptionLabel={({name}) => name}
-            getOptionValue={({id}) => id}
-          /> : null}
-           {scheduleData?.length ? <Select
-            placeholder="Select game"
-            name="games"
-            options={scheduleData}
-            classNamePrefix="select"
-            className="w-[300px]"
-            isClearable
-            isSearchable
-            onChange={onGameSelect}
-            getOptionLabel={(option: any) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
-            getOptionValue={({gamePk}) => gamePk}
-          /> : null}
-        </div>
+          <div className="flex items-center justify-center align-center gap-8">
+            <Select
+              styles={{
+                container: provided => ({
+                  ...provided,
+                  width: 150
+                })
+              }}
+              placeholder="Select season"
+              name="year"
+              options={yearsOptions}
+              defaultValue={defaultValue}
+              classNamePrefix="select"
+              onChange={onYearSelect}
+              isSearchable
+            />
+            {selectedYear ? <Select
+              placeholder="Select team"
+              name="teams"
+              options={teamsOptions}
+              classNamePrefix="select"
+              className="w-[300px]"
+              isClearable
+              isSearchable
+              onChange={onTeamSelect}
+              getOptionLabel={({name}) => name}
+              getOptionValue={({id}) => id}
+            /> : null}
+            {scheduleData?.length ? <Select
+              placeholder="Select game"
+              name="games"
+              options={scheduleData}
+              classNamePrefix="select"
+              className="w-[300px]"
+              isClearable
+              isSearchable
+              onChange={onGameSelect}
+              getOptionLabel={(option: any) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
+              getOptionValue={({gamePk}) => gamePk}
+            /> : null}
+          </div>
         </div>
       </div>
-
-      {/* <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-
-        <div className="flex items-center gap-8">
-          <Select
-            styles={{
-              container: provided => ({
-                ...provided,
-                width: 150
-              })
-            }}
-            placeholder="Select season"
-            name="year"
-            options={yearsOptions}
-            defaultValue={defaultValue}
-            classNamePrefix="select"
-            onChange={onYearSelect}
-            isSearchable
-          />
-          {selectedYear ? <Select
-            placeholder="Select team"
-            name="teams"
-            options={teamsOptions}
-            classNamePrefix="select"
-            className="w-[300px]"
-            isClearable
-            isSearchable
-            onChange={onTeamSelect}
-            getOptionLabel={({name}) => name}
-            getOptionValue={({id}) => id}
-          /> : null}
-           {scheduleData?.length ? <Select
-            placeholder="Select game"
-            name="games"
-            options={scheduleData}
-            classNamePrefix="select"
-            className="w-[300px]"
-            isClearable
-            isSearchable
-            onChange={onGameSelect}
-            getOptionLabel={(option: any) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
-            getOptionValue={({gamePk}) => gamePk}
-          /> : null}
-        </div>
-        <div className="flex items-center gap-8">
-          {selectedYear && <span> Selected year: {selectedYear}</span>}
-          {selectedTeam && <span> Selected team: {selectedTeam}</span>}
-          {selectedGame && officialDate && (
-            <span>Selected game on {officialDate}
-              <span><b> Away:</b> {teams?.away.team.name}</span>
-              <span> <b> Home:</b> {teams?.home.team.name}</span>
-            </span>
-          )}
-        </div>
-
-        
-      </main> */}
      {selectedGame ?  <Playlists selectedGame={gamePk} /> : null}
     </div>
   );
