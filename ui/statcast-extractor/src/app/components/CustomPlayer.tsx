@@ -63,7 +63,7 @@ import { VideoMetric } from "../types/VideoMetric";
                 </div>
                 <div>
                     <div className="flex flex-col gap-1 mb-4">
-                        {metrics?.map(({metric='', detection_time, metric_value}, idx) => (<span className='capitalize' key={idx}>{`${metric?.toLowerCase()} -> ${detection_time} -> ${metric_value}`}</span>))}
+                        {metrics?.map(({metric='', detection_time, metric_value, confidence_score}, idx) => (<span className='capitalize' key={idx}>{`${metric?.toLowerCase()} -> ${detection_time} -> ${metric_value} -> ${confidence_score}`}</span>))}
                     </div>
                     {error && <div className="flex flex-col gap-1">Error fetching data</div> }
                 </div>  

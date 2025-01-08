@@ -26,6 +26,9 @@ response_schema = {
             "metric_value": {
                 "type": "string",
             },
+            "confidence_score": {
+                "type": "number",
+            }
         },
     }
 }
@@ -76,7 +79,7 @@ def extract(video_file_name):
                                          response_schema = response_schema)
 
     video_analysis_prompt = """You are an assistant which detects and extracts MLB Statcast metrics showed in the game videos.
-                            Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units.
+                            Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units, 'confidence_score' - detection confidence score as float from 0 to 1
                             From provided video extract only following metrics: Pitch Speed, Exit Velocity, Projected HR Distance, Launch Angle, Max Height. If confidence score for detection is less than 80% - do not return it.
                             """
 
