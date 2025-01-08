@@ -77,7 +77,7 @@ def extract(video_file_name):
 
     video_analysis_prompt = """You are an assistant which detects and extracts MLB Statcast metrics showed in the game videos.
                             Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units.
-                            From provided video extract only following metrics: Pitch Speed, Exit Velocity, Projected HR Distance, Launch Angle, Max Height. If some metric value is not available - do not return it.
+                            From provided video extract only following metrics: Pitch Speed, Exit Velocity, Projected HR Distance, Launch Angle, Max Height. If confidence score for detection is less than 80% - do not return it.
                             """
 
     contents = [
