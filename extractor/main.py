@@ -70,20 +70,35 @@ def extract_stats(request):
 def extract(video_file_name):
     video_uri = f"gs://gcs_video_samples/temp/{video_file_name}"   
     vertexai.init(project=PROJECT_ID, location=LOCATION)    
-    model = GenerativeModel("gemini-1.5-pro")
+    model = GenerativeModel("gemini-2.0-flash-exp")
     generation_config = GenerationConfig(temperature=0,
                                          response_mime_type="application/json",
                                          response_schema = response_schema)
 
-    video_analysis_prompt = """You are an assistant which detects and extracts MLB Statcast metrics from Statcast on-screen visualizations overlaid on the broadcast.
-                            From provided video extract only metrics listed below, to detect use provided in brackets instructions:
-                            Pitch Velocity (value should be extracted from on-screen visualization);
-                            Exit Velocity (value should be only extracted if it is located near to text 'Exit Velocity', 'EV' or 'EVL');
-                            Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance' or 'HR-DIS');
-                            Launch Angle (value should be only extracted if it is located near to text 'Launch Angle', 'Angle' or 'LA');
-                            Max Height (value should be only extracted if it is located near to text 'Max Height');
-                            If some metric not available - do not return it.
-                            Reply in JSON array format, where: 'metric' - statcast metric name always in uppercase words separated with space, 'detection_time'- detection time in format minute:second, 'metric_value' - metric value with units.
+    video_analysis_prompt = """
+                            ##Task description
+                            You are given a MLB game video. You have two task to do with this video:
+                            1. Detect regions where MLB on-screen visualizations overlaid on the broadcast.
+                            2. From detected regions in task 1, extract MLB Statcast metrics listed below, for detection use provided in brackets 
+                            - Pitch Velocity (value should be extracted from on-screen visualization);
+                            - Exit Velocity (value should be only extracted if it is located near to text 'Exit Velocity', 'EV' or 'EVL');
+                            - Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance' or 'HR-DIS');
+                            - Launch Angle (value should be only extracted if it is located near to text 'Launch Angle', 'Angle' or 'LA');
+                            - Max Height (value should be only extracted if it is located near to text 'Max Height');
+
+                            ##Output specification
+                            You should provide the output in a strictly valid JSON format same as the following example. [
+                            {"metric": "statcast metric name, words separated with space.",
+                            "detection_time": "Timestamp of the event in mm:ss format.",
+                            "metric_value": "metric value with units."
+                            },
+                            {"metric": "statcast metric name, words separated with space.",
+                            "detection_time": "Timestamp of the event in mm:ss format.",
+                            "metric_value": "metric value with units."
+                            },]
+                            If some metric not available on video, you should not return them. Do not hallucinate.
+
+                            Your answer (as a JSON LIST):
                             """
 
     contents = [
