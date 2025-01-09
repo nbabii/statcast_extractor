@@ -67,6 +67,10 @@ def extract_stats(request):
     return res, 200, headers
 
 
+def clear_extra_detections(response_array):
+    # TODO
+    return response_array
+
 def extract(video_file_name):
     video_uri = f"gs://gcs_video_samples/temp/{video_file_name}"   
     vertexai.init(project=PROJECT_ID, location=LOCATION)    
@@ -77,14 +81,14 @@ def extract(video_file_name):
 
     video_analysis_prompt = """
                             ##Task description
-                            You are given a MLB game video. You have two task to do with this video:
-                            1. Detect regions where MLB on-screen visualizations overlaid on the broadcast.
-                            2. From detected regions in task 1, extract MLB Statcast metrics listed below, for detection use provided in brackets 
-                            - Pitch Velocity (value should be extracted from on-screen visualization);
+                            You are given an MLB game video and a list of MLB Statcast metrics with detection instructions in brackets:
+                            - Pitch Velocity (value should be extracted from any available place you know);
                             - Exit Velocity (value should be only extracted if it is located near to text 'Exit Velocity', 'EV' or 'EVL');
-                            - Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance' or 'HR-DIS');
+                            - Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance', 'HR-DIS', "HR");
                             - Launch Angle (value should be only extracted if it is located near to text 'Launch Angle', 'Angle' or 'LA');
                             - Max Height (value should be only extracted if it is located near to text 'Max Height');
+                            
+                            Using the instructions, extract metrics from the video.
 
                             ##Output specification
                             You should provide the output in a strictly valid JSON format same as the following example. [
@@ -96,9 +100,6 @@ def extract(video_file_name):
                             "detection_time": "Timestamp of the event in mm:ss format.",
                             "metric_value": "metric value with units."
                             },]
-                            If some metric not available on video, you should not return them. Do not hallucinate.
-
-                            Your answer (as a JSON LIST):
                             """
 
     contents = [
@@ -111,4 +112,6 @@ def extract(video_file_name):
     
     response = model.generate_content(contents, generation_config=generation_config)
     
-    return response.text
+    final_result = clear_extra_detections(json.loads(response.text))
+
+    return final_result
