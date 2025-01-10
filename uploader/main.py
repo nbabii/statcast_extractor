@@ -27,7 +27,6 @@ def upload_video_file(request):
 
     if request.method == 'POST':
         try:
-            logging.info(f"test")
             file_name = download_file(request_json["video_url"])
             #get_frames(file_name)
             upload_temp_folder()
