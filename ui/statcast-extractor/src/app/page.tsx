@@ -15,29 +15,41 @@ const defaultOption: FilterOptions = {
   value: '',
   label: ''
 }
+const defaultGameOption: GameResponse = {
+    gameDate: '',
+    gamePk: '',
+    season: '',
+    team_away:'',
+    team_home: '',
+    title:'',
+    type: '',
+    video_url: ''
+}
 
 export default function Home() {
 
   const [yearsOptions, setYearsOptions] = useState<FilterOptions[]>([]);
   const [teamsOptions, setTeamsOptions] = useState<FilterOptions[]>([]);
   const [scheduleData, setScheduleData] = useState<GameResponse[]>([])
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState<FilterOptions>(defaultOption);
   const [selectedTeam, setSelectedTeam] = useState<FilterOptions>(defaultOption);
-  const [selectedGame, setSelectedGame] = useState<SelectedGamePk>();
+  const [selectedGame, setSelectedGame] = useState<GameResponse>(defaultGameOption);
 
   useEffect(() => {
     const getSeasons = async () => {
       const data = await getFilters() as SeasonResponse[];
-      setYearsOptions(data?.reverse().map(({season}) => ({
+      const season = data?.reverse().map(({season}) => ({
         value: season,
         label: season,
-      })))
+      })) as FilterOptions[]
+      setYearsOptions(season)
+      setSelectedYear(season[0])
     };
     getSeasons();
   },[])
 
   const getTeams = async () => {
-    const data = await getFilters(selectedYear) as TeamResponse[];
+    const data = await getFilters(selectedYear?.value) as TeamResponse[];
     setTeamsOptions(data?.map(({team_home}) => ({
       value: team_home,
       label: team_home,
@@ -46,24 +58,26 @@ export default function Home() {
 
   const getSchedule = async () => {
     try {
-      const data = await getFilters(selectedYear, selectedTeam?.value) as GameResponse[];
+      const data = await getFilters(selectedYear?.value, selectedTeam?.value) as GameResponse[];
       setScheduleData(data)
     } catch (error) {
       console.error('Error fetching teams data:', error)
     }
   }
 
-
   const onYearSelect = (selected) => {
-    // if(selectedYear == selected ) return;
-    setSelectedYear(selected?.label)
-    // setSelectedTeam(defaultOption);
-    // setSelectedGame({gamePk: ''});
-    // setScheduleData([]);
+    if(selectedYear?.value == selected?.value ) return;
+    setSelectedYear(selected)
+    setSelectedTeam(defaultOption);
+    setSelectedGame(defaultGameOption);
+    setScheduleData([]);
   }
 
   const onTeamSelect = (selected) => {
+    if(selectedTeam.value == selected?.value ) return;
     setSelectedTeam(selected)
+    setSelectedGame(defaultGameOption);
+    setScheduleData([]);
   }
   const onGameSelect  = (selected) => {
     setSelectedGame(selected)
@@ -77,8 +91,6 @@ export default function Home() {
       getSchedule();
     }
   }, [selectedYear, selectedTeam])
-
-const defaultValue = { value: '2024', label: '2024' };
 
 return (
     <div className={`{ p-8 pb-20 gap-16}`}>
@@ -102,10 +114,11 @@ return (
                   width: 150
                 })
               }}
+              isLoading={!yearsOptions.length}
               placeholder="Select season"
               name="year"
               options={yearsOptions}
-              defaultValue={defaultValue}
+              value={selectedYear}
               classNamePrefix="select"
               onChange={onYearSelect}
               isSearchable
@@ -113,6 +126,7 @@ return (
             {selectedYear ? <Select
               placeholder="Select team"
               name="teams"
+              isLoading={!teamsOptions.length}
               options={teamsOptions}
               classNamePrefix="select"
               className="w-[300px]"
@@ -121,16 +135,18 @@ return (
               onChange={onTeamSelect}
               value={selectedTeam}
             /> : null}
-            {scheduleData?.length ? <Select
+            {selectedTeam?.value ? <Select
               placeholder="Select game"
               name="games"
               options={scheduleData}
+              isLoading={!scheduleData.length}
               classNamePrefix="select"
               className="w-[300px]"
-              isClearable
+              isClearable={!selectedGame}
               isSearchable
               onChange={onGameSelect}
-              getOptionLabel={(option: GameResponse) => `${new Date(option.gameDate).toDateString()}: ${option.team_away} vs ${option.team_home}` }
+              value={selectedGame}
+              getOptionLabel={({gameDate, team_away, team_home}: GameResponse) => gameDate ? `${new Date(gameDate).toDateString()}: ${team_away} vs ${team_home}` : '' }
               getOptionValue={({gamePk}) => gamePk}
             /> : null}
           </div>
