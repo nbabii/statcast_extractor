@@ -1,60 +1,71 @@
- /* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client"
 import Select from 'react-select';
 import React, { useState, useEffect } from 'react'
 import Playlists from "./components/Playlists";
 import Image from 'next/image';
 import { isEmpty } from './utils/helpers';
+import { getFilters } from './service/api';
+import { FilterOptions, SeasonResponse, TeamResponse, GameResponse} from './types/Filters';
+
+export type SelectedGamePk = {
+  gamePk: string;
+}
+
+const defaultOption: FilterOptions = {
+  value: '',
+  label: ''
+}
 
 export default function Home() {
-  const [teamsOptions, setTeamsOptions] = useState([]);
-  const [scheduleData, setScheduleData] = useState([])
+
+  const [yearsOptions, setYearsOptions] = useState<FilterOptions[]>([]);
+  const [teamsOptions, setTeamsOptions] = useState<FilterOptions[]>([]);
+  const [scheduleData, setScheduleData] = useState<GameResponse[]>([])
   const [selectedYear, setSelectedYear] = useState('2024');
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedGame, setSelectedGame] = useState();
+  const [selectedTeam, setSelectedTeam] = useState<FilterOptions>(defaultOption);
+  const [selectedGame, setSelectedGame] = useState<SelectedGamePk>();
 
-  const getYears = () => {
-    const currentYear = (new Date()).getFullYear()-1;
-    const range = (start: number, stop: number, step: number) => Array.from({ length: (stop - start) / step + 1}, (_, i) => start + (i * step));
-    return range(currentYear, currentYear - 30, -1).map((year) => ({
-      value: year + '',
-      label: year + '',
-    }));
+  useEffect(() => {
+    const getSeasons = async () => {
+      const data = await getFilters() as SeasonResponse[];
+      setYearsOptions(data?.reverse().map(({season}) => ({
+        value: season,
+        label: season,
+      })))
+    };
+    getSeasons();
+  },[])
+
+  const getTeams = async () => {
+    const data = await getFilters(selectedYear) as TeamResponse[];
+    setTeamsOptions(data?.map(({team_home}) => ({
+      value: team_home,
+      label: team_home,
+    })))
   }
-  const yearsOptions = getYears();
 
-  const getTeams = () => {
-    return fetch(`https://statsapi.mlb.com/api/v1/teams?season=${selectedYear}`)
-    .then(response => response.json())
-    .then(data => setTeamsOptions(data?.teams.filter((team) => team?.active && team?.sport.id == 1 ).sort((a, b) => a.name.localeCompare(b.name))))
-    .catch(error => console.error('Error fetching teams data:', error));
-  }
-
-  const getSchedule = () => {
-    return fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&season=${selectedYear}&gameType=R`)
-    .then(response => response.json())
-    .then(data => {
-      const filteredData = data?.dates?.map(({games})=> {
-         const allGames = games.flat().filter(({teams}) =>{
-          return teams?.away?.team?.name == selectedTeam || teams?.home?.team?.name == selectedTeam 
-        })
-        return allGames.flat()
-      });
-      setScheduleData(filteredData.flat())
-    })
-    .catch(error => console.error('Error fetching teams data:', error));
+  const getSchedule = async () => {
+    try {
+      const data = await getFilters(selectedYear, selectedTeam?.value) as GameResponse[];
+      setScheduleData(data)
+    } catch (error) {
+      console.error('Error fetching teams data:', error)
+    }
   }
 
 
-  const onYearSelect = (selected: any) => {
+  const onYearSelect = (selected) => {
+    // if(selectedYear == selected ) return;
     setSelectedYear(selected?.label)
+    // setSelectedTeam(defaultOption);
+    // setSelectedGame({gamePk: ''});
+    // setScheduleData([]);
   }
 
-  const onTeamSelect = (selected: any) => {
-    setSelectedTeam(selected?.name)
+  const onTeamSelect = (selected) => {
+    setSelectedTeam(selected)
   }
-  const onGameSelect  = (selected: any) => {
+  const onGameSelect  = (selected) => {
     setSelectedGame(selected)
   }
 
@@ -66,8 +77,6 @@ export default function Home() {
       getSchedule();
     }
   }, [selectedYear, selectedTeam])
-
-const { gamePk } = selectedGame || {} as any;
 
 const defaultValue = { value: '2024', label: '2024' };
 
@@ -107,11 +116,10 @@ return (
               options={teamsOptions}
               classNamePrefix="select"
               className="w-[300px]"
-              isClearable
+              isClearable={!selectedTeam}
               isSearchable
               onChange={onTeamSelect}
-              getOptionLabel={({name}) => name}
-              getOptionValue={({id}) => id}
+              value={selectedTeam}
             /> : null}
             {scheduleData?.length ? <Select
               placeholder="Select game"
@@ -122,13 +130,13 @@ return (
               isClearable
               isSearchable
               onChange={onGameSelect}
-              getOptionLabel={(option: any) => `${option.officialDate}: ${option.teams?.away?.team?.name} vs ${option.teams?.home?.team?.name}` }
+              getOptionLabel={(option: GameResponse) => `${new Date(option.gameDate).toDateString()}: ${option.team_away} vs ${option.team_home}` }
               getOptionValue={({gamePk}) => gamePk}
             /> : null}
           </div>
         </div>
       </div>
-     {selectedGame ?  <Playlists selectedGame={gamePk} /> : null}
+     {selectedGame?.gamePk ? <Playlists selectedGame={selectedGame?.gamePk} /> : null}
     </div>
   );
 }

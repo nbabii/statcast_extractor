@@ -36,7 +36,7 @@ export default function Playlists({ selectedGame }: { selectedGame: string }) {
     const handleClickWrapper = ({url, metric, description}) => {
         setSelected({url, metric, description});
     }
-    console.log('playlists', playlists)
+
     return (
         <div className="flex gap-3 items-start">
             <div className={`flex gap-5 justify-stretch items-stretch flex-wrap ${isEmpty(selected?.url) ? 'w-full' : 'w-3/12'} `}>
