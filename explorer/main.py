@@ -3,6 +3,7 @@ import functions_framework
 import logging
 import json
 
+bq_table = "glassy-acolyte-444919-c1.mlb.statcas_videos"
 
 @functions_framework.http
 def explore_videos(request):
@@ -16,22 +17,36 @@ def explore_videos(request):
 
         return ("", 204, headers)
     
-    query = """SELECT * FROM `glassy-acolyte-444919-c1.mlb.statcas_videos` LIMIT 1500"""
+    season = request.args.get('season')
+    team = request.args.get('team')
+
+    query = f"SELECT DISTINCT season FROM `{bq_table}`"
+
+    if season:
+        query = f"SELECT DISTINCT team_home FROM `{bq_table}` WHERE season = {season}"
+    
+    if season and team:
+        query = f"SELECT * FROM `{bq_table}` WHERE season = {season} AND team_home = '{team}'"
+    
+    
 
     if request.method == 'GET':
         try:
             client = bigquery.Client()
-            results = client.query(query).result() 
-
-            rows = [{
+            results = client.query(query).result()
+            if season and team:
+                rows = [{
                 "season": row.season,
                 "team_away": row.team_away,
                 "team_home": row.team_home,
                 "gamePk": row.gamePk,
                 "title": row.title,
                 "video_url": row.video_url,
+                "type": row.type,
+                "gameDate": row.gameDate.isoformat(),
                 } for row in results]
-
+            else:
+                rows = [dict(row) for row in results]
         except Exception as e:
             logging.error(f"Server error: {e}")
             return json.dumps({"error": f"An unexpected error occurred. E: {e}"}), 500
@@ -40,4 +55,4 @@ def explore_videos(request):
     
     headers = {"Access-Control-Allow-Origin": "*"}
 
-    return json.dumps({"available_videos": rows}), 200, headers
+    return json.dumps(rows), 200, headers
