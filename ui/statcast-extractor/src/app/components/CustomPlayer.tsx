@@ -3,20 +3,21 @@
  import ReactPlayer from 'react-player';
 import {fetchVideoUploader, fetchVideoMetric} from "../service/api"
 import { VideoMetric } from "../types/VideoMetric";
+import { GameResponse } from '../types/Filters';
 
- interface IDataProps {
-    url: string,
-    type: string,
+ interface ICustomPlayerProps {
+    video: GameResponse,
     playing?: boolean,
-    description: string
  }
  
- export function CustomPlayer({url, type, playing, description}: IDataProps) {
-
+ export function CustomPlayer({video, playing}: ICustomPlayerProps) {
+    console.log('video', video)
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(false);
     // const [fileName, setFileName] = useState('');
+
+    const {gameDate, video_url: url, title, type} = video;
 
     const handleClick = async () => {
         setIsLoading(true);
@@ -56,20 +57,27 @@ import { VideoMetric } from "../types/VideoMetric";
                     playing={playing}
                 />
             </div>
-            <div className="flex gap-3 mb-3 px-3">
-                <div>
-                    <div className='line-clamp-2 font-bold'>{description}</div>
-                    {<div className="flex flex-col gap-1">Type: {type}</div>}
-                    {(metrics.length > 0 || error || !playing) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded w-[100px]" onClick={handleClick} disabled={isLoading} >
-                        {isLoading ? 'Loading...' : 'Extract'}
-                    </button>}
-                </div>
-                <div>
-                    <div className="flex flex-col gap-1 mb-4">
-                        {metrics?.map(({metric='', detection_time, metric_value}, idx) => (<span className='capitalize' key={idx}>{`${metric?.toLowerCase()} -> ${detection_time} -> ${metric_value}`}</span>))}
+            <div className="flex flex-col px-3">
+                <div className='line-clamp-2 font-bold '>{title}</div>
+                <div className=''>{new Date(gameDate).toDateString()}</div>
+                <div className="italic">{type}</div>
+                {(metrics.length > 0 || error || !playing) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-2 rounded w-[100px] mb-2" onClick={handleClick} disabled={isLoading} >
+                    {isLoading ? 'Loading...' : 'Extract'}
+                </button>}
+                {(metrics.length > 0 && !error && playing) ? <div className='bg-gray-200 rounded p-2 mt-3'>
+                    <div className='flex bg-gray-300 rounded-md	px-3 mb-3 flex-wrap'>
+                        {['Metric Name', 'Metric Value', 'Detection Time']?.map(metric => <div key={metric} className='flex-1 font-bold'>{metric}</div>)}
                     </div>
-                    {error && <div className="flex flex-col gap-1">Error fetching data</div> }
-                </div>  
+                    {metrics.map((item, idx) => (
+                        <div className='flex px-3 flex-wrap mb-1' key={idx}>
+                            <div className='flex-1'>{item.metric}</div>
+                            <div className='flex-1'>{item.metric_value}</div>
+                            <div className='flex-1'>{item.detection_time}</div> 
+                        </div>
+                        ))}
+                    
+                </div> : null}
+                {error && <div className="flex flex-col gap-1">Error fetching data</div> }
             </div> 
         </div>
    );

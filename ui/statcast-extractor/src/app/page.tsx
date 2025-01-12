@@ -3,13 +3,9 @@ import Select from 'react-select';
 import React, { useState, useEffect } from 'react'
 import Playlists from "./components/Playlists";
 import Image from 'next/image';
-import { isEmpty } from './utils/helpers';
+import { getUniqueListBy, isEmpty } from './utils/helpers';
 import { getFilters } from './service/api';
 import { FilterOptions, SeasonResponse, TeamResponse, GameResponse} from './types/Filters';
-
-export type SelectedGamePk = {
-  gamePk: string;
-}
 
 const defaultOption: FilterOptions = {
   value: '',
@@ -31,6 +27,8 @@ export default function Home() {
   const [yearsOptions, setYearsOptions] = useState<FilterOptions[]>([]);
   const [teamsOptions, setTeamsOptions] = useState<FilterOptions[]>([]);
   const [scheduleData, setScheduleData] = useState<GameResponse[]>([])
+  const [games, setGames] = useState<GameResponse[]>([])
+  const [playlists, setPlaylists] = useState<GameResponse[]>([])
   const [selectedYear, setSelectedYear] = useState<FilterOptions>(defaultOption);
   const [selectedTeam, setSelectedTeam] = useState<FilterOptions>(defaultOption);
   const [selectedGame, setSelectedGame] = useState<GameResponse>(defaultGameOption);
@@ -58,8 +56,10 @@ export default function Home() {
 
   const getSchedule = async () => {
     try {
-      const data = await getFilters(selectedYear?.value, selectedTeam?.value) as GameResponse[];
-      setScheduleData(data)
+      const data = await getFilters(selectedYear?.value, selectedTeam?.value)  as GameResponse[];
+      const filteredData = getUniqueListBy(data, 'team_away') as GameResponse[];
+      setGames(data)
+      setScheduleData(filteredData)
     } catch (error) {
       console.error('Error fetching teams data:', error)
     }
@@ -70,17 +70,19 @@ export default function Home() {
     setSelectedYear(selected)
     setSelectedTeam(defaultOption);
     setSelectedGame(defaultGameOption);
-    setScheduleData([]);
+    setPlaylists([]);
   }
 
   const onTeamSelect = (selected) => {
     if(selectedTeam.value == selected?.value ) return;
     setSelectedTeam(selected)
     setSelectedGame(defaultGameOption);
-    setScheduleData([]);
+    setPlaylists([]);
   }
   const onGameSelect  = (selected) => {
-    setSelectedGame(selected)
+    setSelectedGame(selected);
+    const test = [...games].filter(data => data.team_away == selected.team_away)
+    setPlaylists(test)
   }
 
   useEffect(() => {
@@ -146,13 +148,13 @@ return (
               isSearchable
               onChange={onGameSelect}
               value={selectedGame}
-              getOptionLabel={({gameDate, team_away, team_home}: GameResponse) => gameDate ? `${new Date(gameDate).toDateString()}: ${team_away} vs ${team_home}` : '' }
-              getOptionValue={({gamePk}) => gamePk}
+              getOptionLabel={({gameDate, team_away, team_home}: GameResponse) => gameDate ? ` ${team_away} vs ${team_home}` : '' }
+              getOptionValue={({gameDate, gamePk, team_away, team_home, video_url}) => gameDate + gamePk + team_away + team_home + video_url}
             /> : null}
           </div>
         </div>
       </div>
-     {selectedGame?.gamePk ? <Playlists selectedGame={selectedGame?.gamePk} /> : null}
+     {selectedGame?.gamePk ? <Playlists playlists={playlists} /> : null}
     </div>
   );
 }
