@@ -2,8 +2,9 @@ from google.cloud import bigquery
 import functions_framework
 import logging
 import json
+import os
 
-bq_table = "glassy-acolyte-444919-c1.mlb.statcas_videos"
+bq_table = f"{os.environ.get("GOOGLE_CLOUD_PROJECT")}.mlb.statcas_videos"
 
 @functions_framework.http
 def explore_videos(request):

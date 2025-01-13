@@ -2,7 +2,7 @@ from google.cloud import storage
 import functions_framework
 import logging
 import json
-import typing_extensions as typing
+import os
 
 import vertexai
 from vertexai.preview.generative_models import (
@@ -72,7 +72,7 @@ def clear_extra_detections(response_array):
     return response_array
 
 def extract(video_file_name):
-    video_uri = f"gs://gcs_video_samples/temp/{video_file_name}"   
+    video_uri = f"gs://{os.environ.get('GCS_BUCKET')}/temp/{video_file_name}"   
     vertexai.init(project=PROJECT_ID, location=LOCATION)    
     model = GenerativeModel("gemini-2.0-flash-exp")
     generation_config = GenerationConfig(temperature=0,

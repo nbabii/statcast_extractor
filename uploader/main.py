@@ -85,7 +85,7 @@ def get_frames(video_file, for_seconds=5):
 
 def upload_temp_folder():
     storage_client = storage.Client()
-    bucket = storage_client.bucket("gcs_video_samples")
+    bucket = storage_client.bucket(f"{os.environ.get('GCS_BUCKET')}")
 
     for root, _, files in os.walk("temp/"):
         for file in files:
