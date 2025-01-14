@@ -1,9 +1,9 @@
 from google.cloud import storage
 import functions_framework
+from datetime import datetime
 import logging
 import json
 import os
-
 import vertexai
 from vertexai.preview.generative_models import (
     GenerationConfig,
@@ -31,7 +31,7 @@ response_schema = {
 }
 
 
-PROJECT_ID = "glassy-acolyte-444919-c1"
+PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
 LOCATION = "us-central1"
 
 
@@ -66,10 +66,6 @@ def extract_stats(request):
     
     return res, 200, headers
 
-
-def clear_extra_detections(response_array):
-    # TODO
-    return response_array
 
 def extract(video_file_name):
     video_uri = f"gs://{os.environ.get('GCS_BUCKET')}/temp/{video_file_name}"   
@@ -115,3 +111,54 @@ def extract(video_file_name):
     final_result = clear_extra_detections(json.loads(response.text))
 
     return final_result
+
+
+class MetricSet:
+    def __init__(self):
+        self._data = {}
+
+    def add(self, element):
+        if "metric" not in element:
+            raise ValueError("Element must contain a 'metric' key.")
+        self._data[element["metric"]] = element
+
+    def get(self, metric):
+        return self._data[metric]
+
+    def __iter__(self):
+        return iter(self._data.values())
+
+    def __contains__(self, element):
+        return element["metric"] in self._data
+
+    def __len__(self):
+        return len(self._data)
+
+    def __repr__(self):
+        return f"{list(self._data.values())}"
+    
+    def to_list(self):
+        return list(self._data.values())
+
+
+def time_to_seconds(time_str):
+    t = datetime.strptime(time_str, "%M:%S")
+    return t.minute * 60 + t.second
+
+
+def clear_extra_detections(response_array):
+    data = sorted(response_array, key=lambda elm: time_to_seconds(elm["detection_time"]))
+    metric_set = MetricSet()
+
+    for item in data:
+        
+        if item in metric_set:
+            current_time = time_to_seconds(item["detection_time"])
+            last_time = time_to_seconds(metric_set.get(item["metric"])['detection_time'])
+            if current_time - last_time < 5:
+                continue
+            metric_set.add(item)
+        
+        metric_set.add(item)
+
+    return metric_set.to_list()
