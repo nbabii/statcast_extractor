@@ -11,6 +11,8 @@ from vertexai.preview.generative_models import (
     Part
 )
 
+PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
+LOCATION = "us-central1"
 
 response_schema = {
     "type": "array",
@@ -29,10 +31,6 @@ response_schema = {
         },
     }
 }
-
-
-PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
-LOCATION = "us-central1"
 
 
 @functions_framework.http
@@ -83,6 +81,8 @@ def extract(video_file_name):
                             - Projected HR Distance (value should be only extracted if it is located near to text 'Projected HR Distance', 'HR Distance', 'HR-DIS', "HR");
                             - Launch Angle (value should be only extracted if it is located near to text 'Launch Angle', 'Angle' or 'LA');
                             - Max Height (value should be only extracted if it is located near to text 'Max Height');
+                            - Arm Strength (value should be only extracted if it is located near to text 'Arm Strength');
+                            - Sprint Speed (value should be only extracted if it is located near to text 'Sprint Speed');
                             
                             Using the instructions, extract metrics from the video.
 
