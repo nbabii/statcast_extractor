@@ -98,17 +98,18 @@ return (
     <div className={`{ p-8 pb-20 gap-16}`}>
       <div className={`grid items-center justify-items-center gap-16 ${isEmpty(selectedGame) ? 'h-[calc(100vh_-_150px)]' : 'h-full'}`}>
         <div className={'flex items-center flex-col justify-center align-center m-6 justify-items-center'}>
-          <div className={'flex items-center justify-center align-center m-6'}>
+          <div className={'flex items-center justify-center align-center m-2'}>
             <Image
               src="https://www.mlbstatic.com/team-logos/league-on-dark/1.svg"
               alt="Logo"
               width={100}
               height={10}
             />
-            <div className='text-3xl font-bold items-center p-3'>Statcast</div>
+            <div className='text-3xl font-bold items-center p-3'>Statcast Extractor</div>
           </div>
+          <div className='text-xl items-center p-1'>Select season, team and game to review available content:</div>
         
-          <div className="flex items-center justify-center align-center gap-8">
+          <div className="flex items-center justify-center align-center gap-8 m-2">
             <Select
               styles={{
                 container: provided => ({
