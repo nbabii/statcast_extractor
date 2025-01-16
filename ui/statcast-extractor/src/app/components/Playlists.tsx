@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CustomPlayer } from '../components/CustomPlayer';
 import { isEmpty } from "../utils/helpers";
 import { GameResponse } from "../types/Filters";
@@ -29,6 +29,10 @@ export default function Playlists({ playlists}: IPlaylistsProps) {
     const displayMore = () => {
         setDisplayItems(displayItems + 10)
     }
+    
+    useEffect(()=>{
+        setSelected(defaultSelection)
+    },[playlists])
 
     return (
         <div className="flex flex-col justify-items-stretch">

@@ -32,9 +32,12 @@ export default function Home() {
   const [selectedYear, setSelectedYear] = useState<FilterOptions>(defaultOption);
   const [selectedTeam, setSelectedTeam] = useState<FilterOptions>(defaultOption);
   const [selectedGame, setSelectedGame] = useState<GameResponse>(defaultGameOption);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTeamLoading, setIsTeamLoading] = useState(true);
 
-  useEffect(() => {
-    const getSeasons = async () => {
+  const getSeasons = async () => {
+    setIsLoading(true);
+    try {
       const data = await getFilters() as SeasonResponse[];
       const season = data?.reverse().map(({season}) => ({
         value: season,
@@ -42,17 +45,33 @@ export default function Home() {
       })) as FilterOptions[]
       setYearsOptions(season)
       setSelectedYear(season[0])
-    };
-    getSeasons();
-  },[])
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getTeams = async () => {
-    const data = await getFilters(selectedYear?.value) as TeamResponse[];
-    setTeamsOptions(data?.map(({team_home}) => ({
-      value: team_home,
-      label: team_home,
-    })))
+    setIsTeamLoading(true);
+    try {
+      const data = await getFilters(selectedYear.value || "2024") as TeamResponse[];
+      const teamsData = data?.map(({team_home}) => ({
+        value: team_home,
+        label: team_home,
+      }))
+      setTeamsOptions(teamsData)
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTeamLoading(false);
+    }
   }
+
+  useEffect(() => {
+    getSeasons();
+    getTeams();
+  },[])
 
   const getSchedule = async () => {
     try {
@@ -66,8 +85,9 @@ export default function Home() {
   }
 
   const onYearSelect = (selected) => {
-    if(selectedYear?.value == selected?.value ) return;
-    setSelectedYear(selected)
+    if(selectedYear?.value == selected?.value) return;
+    const selectedData = selected?.value ? selected : {value: '2024', label: '2024'}
+    setSelectedYear(selectedData)
     setSelectedTeam(defaultOption);
     setSelectedGame(defaultGameOption);
     setPlaylists([]);
@@ -94,7 +114,7 @@ export default function Home() {
     }
   }, [selectedYear, selectedTeam])
 
-return (
+  return (
     <div className={`{ p-8 pb-20 gap-16}`}>
       <div className={`grid items-center justify-items-center gap-16 ${isEmpty(selectedGame) ? 'h-[calc(100vh_-_150px)]' : 'h-full'}`}>
         <div className={'flex items-center flex-col justify-center align-center m-6 justify-items-center'}>
@@ -104,12 +124,13 @@ return (
               alt="Logo"
               width={100}
               height={10}
+              onClick={() => onYearSelect(defaultOption)}
             />
             <div className='text-3xl font-bold items-center p-3'>Statcast Extractor</div>
           </div>
           <div className='text-xl items-center p-1'>Select season, team and game to review available content:</div>
         
-          <div className="flex items-center justify-center align-center gap-8 m-2">
+          <div className="flex items-center justify-center align-center gap-8 m-2" suppressHydrationWarning>
             <Select
               styles={{
                 container: provided => ({
@@ -117,7 +138,7 @@ return (
                   width: 150
                 })
               }}
-              isLoading={!yearsOptions.length}
+              isLoading={isLoading}
               placeholder="Select season"
               name="year"
               options={yearsOptions}
@@ -125,11 +146,12 @@ return (
               classNamePrefix="select"
               onChange={onYearSelect}
               isSearchable
+              
             />
-            {selectedYear ? <Select
+           <Select
               placeholder="Select team"
               name="teams"
-              isLoading={!teamsOptions.length}
+              isLoading={isTeamLoading}
               options={teamsOptions}
               classNamePrefix="select"
               className="w-[300px]"
@@ -137,7 +159,7 @@ return (
               isSearchable
               onChange={onTeamSelect}
               value={selectedTeam}
-            /> : null}
+            /> 
             {selectedTeam?.value ? <Select
               placeholder="Select game"
               name="games"

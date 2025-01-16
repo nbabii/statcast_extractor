@@ -11,7 +11,6 @@ import { GameResponse } from '../types/Filters';
  }
  
  export function CustomPlayer({video, playing}: ICustomPlayerProps) {
-    console.log('video', video)
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(false);
