@@ -8,9 +8,10 @@ import { GameResponse } from '../types/Filters';
  interface ICustomPlayerProps {
     video: GameResponse,
     playing?: boolean,
+    controls?: boolean,
  }
  
- export function CustomPlayer({video, playing}: ICustomPlayerProps) {
+ export function CustomPlayer({video, playing, controls}: ICustomPlayerProps) {
     const [metrics, setMetrics] = useState<VideoMetric[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -50,7 +51,7 @@ import { GameResponse } from '../types/Filters';
                 <ReactPlayer 
                     key={url} 
                     url={url}
-                    controls={playing}
+                    controls={controls}
                     width={'100%'}
                     height='100%'
                     playing={playing}
@@ -60,10 +61,10 @@ import { GameResponse } from '../types/Filters';
                 <div className='line-clamp-2 font-bold '>{title}</div>
                 <div className=''>{new Date(gameDate).toDateString()}</div>
                 <div className="italic">{type}</div>
-                {(metrics.length > 0 || error || !playing) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-2 rounded w-[200px] mb-2" onClick={handleClick} disabled={isLoading} >
+                {(metrics.length > 0 || error || !controls) ? null : <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-2 rounded w-[200px] mb-2" onClick={handleClick} disabled={isLoading} >
                     {isLoading ? 'Extracting...' : 'Extract Metrics'}
                 </button>}
-                {(metrics.length > 0 && !error && playing) ? <div className='bg-gray-200 rounded p-2 mt-3'>
+                {(metrics.length > 0 && !error && controls) ? <div className='bg-gray-200 rounded p-2 mt-3'>
                     <div className='flex bg-gray-300 rounded-md	px-3 mb-3 flex-wrap'>
                         {['Metric Name', 'Metric Value', 'Detection Time']?.map(metric => <div key={metric} className='flex-1 font-bold'>{metric}</div>)}
                     </div>

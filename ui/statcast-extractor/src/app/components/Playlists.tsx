@@ -29,7 +29,7 @@ export default function Playlists({ playlists}: IPlaylistsProps) {
     const displayMore = () => {
         setDisplayItems(displayItems + 10)
     }
-    
+
     useEffect(()=>{
         setSelected(defaultSelection)
     },[playlists])
@@ -38,13 +38,14 @@ export default function Playlists({ playlists}: IPlaylistsProps) {
         <div className="flex flex-col justify-items-stretch">
             <div className="flex gap-3 items-start">
                 <div className={`flex gap-5 justify-stretch items-stretch flex-wrap ${isEmpty(selected?.video_url) ? 'w-full' : 'w-3/12'} `}>
-                    {playlists.slice(0, displayItems).map((video: GameResponse) => (
-                        <div className="w-[300px]" key={video.video_url+video.title} 
+                    {playlists.slice(0, displayItems).map((video: GameResponse, idx) => (
+                        <div className="w-[300px]" key={video.video_url+video.title+idx} 
                             onClick={() => handleClickWrapper(video)}
                         >
                             <CustomPlayer 
                                 video={video}
                                 playing={false}
+                                controls={false}
                             />
                         </div>
                     ))}
@@ -53,7 +54,8 @@ export default function Playlists({ playlists}: IPlaylistsProps) {
                     <div className="flex flex-row w-9/12 items-start relative">
                         <CustomPlayer 
                             video={selected}
-                            playing={true}
+                            playing={false}
+                            controls={true}
                         />
                         <button className="absolute right-1 text-white text-xl font-bold" onClick={()=> setSelected(defaultSelection)}>X</button>
                     </div>

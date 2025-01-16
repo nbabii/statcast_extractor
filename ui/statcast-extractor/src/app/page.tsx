@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { getUniqueListBy, isEmpty } from './utils/helpers';
 import { getFilters } from './service/api';
 import { FilterOptions, SeasonResponse, TeamResponse, GameResponse} from './types/Filters';
+import dynamic from 'next/dynamic'
+ 
+const NoSSRSelect = dynamic(() => import('react-select'), { ssr: false })
 
 const defaultOption: FilterOptions = {
   value: '',
@@ -34,6 +37,7 @@ export default function Home() {
   const [selectedGame, setSelectedGame] = useState<GameResponse>(defaultGameOption);
   const [isLoading, setIsLoading] = useState(true);
   const [isTeamLoading, setIsTeamLoading] = useState(true);
+  const [isGameLoading, setIsGameLoading] = useState(true);
 
   const getSeasons = async () => {
     setIsLoading(true);
@@ -74,6 +78,7 @@ export default function Home() {
   },[])
 
   const getSchedule = async () => {
+    setIsGameLoading(true)
     try {
       const data = await getFilters(selectedYear?.value, selectedTeam?.value)  as GameResponse[];
       const filteredData = getUniqueListBy(data, 'team_away') as GameResponse[];
@@ -81,6 +86,8 @@ export default function Home() {
       setScheduleData(filteredData)
     } catch (error) {
       console.error('Error fetching teams data:', error)
+    } finally {
+      setIsGameLoading(false);
     }
   }
 
@@ -101,15 +108,15 @@ export default function Home() {
   }
   const onGameSelect  = (selected) => {
     setSelectedGame(selected);
-    const test = [...games].filter(data => data.team_away == selected.team_away)
-    setPlaylists(test)
+    const list = [...games].filter(data => data.team_away == selected.team_away);
+    setPlaylists(list)
   }
 
   useEffect(() => {
     if (selectedYear) {
       getTeams();
     }
-    if(selectedYear && selectedTeam) {
+    if(selectedYear.value && selectedTeam.value) {
       getSchedule();
     }
   }, [selectedYear, selectedTeam])
@@ -131,7 +138,7 @@ export default function Home() {
           <div className='text-xl items-center p-1'>Select season, team and game to review available content:</div>
         
           <div className="flex items-center justify-center align-center gap-8 m-2" suppressHydrationWarning>
-            <Select
+            <NoSSRSelect
               styles={{
                 container: provided => ({
                   ...provided,
@@ -148,7 +155,7 @@ export default function Home() {
               isSearchable
               
             />
-           <Select
+           <NoSSRSelect
               placeholder="Select team"
               name="teams"
               isLoading={isTeamLoading}
@@ -164,7 +171,7 @@ export default function Home() {
               placeholder="Select game"
               name="games"
               options={scheduleData}
-              isLoading={!scheduleData.length}
+              isLoading={isGameLoading}
               classNamePrefix="select"
               className="w-[300px]"
               isClearable={!selectedGame}
