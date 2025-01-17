@@ -24,7 +24,7 @@ def explore_videos(request):
     query = f"SELECT DISTINCT season FROM `{bq_table}`"
 
     if season:
-        query = f"SELECT DISTINCT team_home FROM `{bq_table}` WHERE season = {season}"
+        query = f"SELECT DISTINCT team_home FROM `{bq_table}` WHERE season = {season} ORDER BY team_home"
     
     if season and team:
         query = f"SELECT * FROM `{bq_table}` WHERE season = {season} AND team_home = '{team}'"
